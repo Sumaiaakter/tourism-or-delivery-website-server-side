@@ -26,6 +26,11 @@ async function run() {
     try {
         await client.connect();
         // console.log('connected to database')
+
+        const PlacesCollection = client.db("tourNetwork").collection("places");
+
+        const touristCollection = client.db("tourNetwork").collection("tourist");
+
         const database = client.db('tourNetwork');
         const servicesCollection = database.collection('places');
 
@@ -57,7 +62,49 @@ async function run() {
             console.log(result);
         });
 
-        // delete api
+        // add places  ----------------------->
+
+        app.post("/addPlaces", async (req, res) => {
+            console.log(req.body);
+            const result = await PlacesCollection.insertOne(req.body);
+            res.send(result);
+            console.log(result);
+        });
+
+        // get search places ------------------->
+
+        app.get("/searchPlaces", async (req, res) => {
+            const searchResult = await PlacesCollection.find({
+                title: { $regex: req.query.search },
+            }).toArray();
+            console.log(searchResult);
+            res.send(searchResult);
+        });
+
+        // get all places ----------------------->
+
+        app.get("/places", async (req, res) => {
+            const result = await PlacesCollection.find({}).toArray();
+            res.send(result);
+        });
+
+        // add tourist ------------------------>
+
+        app.post("/addTourist", async (req, res) => {
+            console.log(req.body)
+            const result = await touristCollection.insertOne(req.body);
+            res.send(result);
+            console.log(result);
+        });
+
+        // get all tourist ------------------------->
+
+        app.get("/allTourists", async (req, res) => {
+            const result = await touristCollection.find({}).toArray();
+            res.send(result);
+        });
+
+        // delete places collectio---------------
 
         app.delete('/places/:id', async (req, res) => {
             const id = req.params.id;
@@ -67,6 +114,21 @@ async function run() {
                 _id: ObjectId(id)
             }
             const result = await servicesCollection.deleteOne(query)
+            res.json(result)
+            console.log(result)
+        })
+        //---------------------------------//
+
+        // delete tourist collection --------------->
+
+        app.delete('/allTourist/:id', async (req, res) => {
+            const id = req.params.id;
+            console.log('delete', id)
+
+            const query = {
+                _id: ObjectId(id)
+            }
+            const result = await touristCollection.deleteOne(query)
             res.json(result)
             console.log(result)
         })
